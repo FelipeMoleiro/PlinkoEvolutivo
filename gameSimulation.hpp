@@ -1,0 +1,28 @@
+#include <vector>
+#include <box2d/box2d.h>
+#include "object.hpp"
+#include "Shader.hpp"
+#include <utility>
+
+class gameSimulation
+{
+private:
+    //posições gerais
+    std::vector<std::pair<float,float>> posBolas;
+    std::vector<std::pair<float,float>> posPlataformas;
+    std::vector<float> anglePlataformas;
+    std::vector<float> scores;
+    std::vector<float> posBarreiras;
+    //objetos openGL para mostrar na tela se preciso
+    Shader* programShader;
+    std::vector<circle> bolas;
+    std::vector<quadrado> plataformas;
+    std::vector<quadrado> barreiras;
+public:
+    gameSimulation(std::vector<std::pair<float,float>> &posBolas,std::vector<std::pair<float,float>> &posPlataformas,
+                            std::vector<float> &anglePlataformas,std::vector<float> &scores,Shader* program);
+    float simulate(bool realTime);
+
+    void set_angles(std::vector<float> &anglePlataformas);
+    ~gameSimulation();
+};
