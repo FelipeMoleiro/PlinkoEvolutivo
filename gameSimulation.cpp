@@ -7,6 +7,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h> 
 
+#define DISCRETE 0
 
 gameSimulation::gameSimulation(std::vector<std::pair<float,float>> &posBolas,std::vector<std::pair<float,float>> &posPlataformas,
                                 std::vector<float> &anglePlataformas,std::vector<float> &scores,Shader* program)
@@ -18,12 +19,14 @@ gameSimulation::gameSimulation(std::vector<std::pair<float,float>> &posBolas,std
     this->programShader = program;
 
     
-    //posBarreiras
-    float posTmp = left;
-    posBarreiras.push_back(left);
-    for(unsigned int i=0;i<scores.size();i++){
-        posTmp = left + (right-left)*(i+1.0)/scores.size();
-        posBarreiras.push_back(posTmp);
+    if(!DISCRETE){
+        //posBarreiras
+        float posTmp = left;
+        posBarreiras.push_back(left);
+        for(unsigned int i=0;i<scores.size();i++){
+            posTmp = left + (right-left)*(i+1.0)/scores.size();
+            posBarreiras.push_back(posTmp);
+        }
     }
 
     //Criando objetos openGL para mostrar na tela
@@ -35,10 +38,12 @@ gameSimulation::gameSimulation(std::vector<std::pair<float,float>> &posBolas,std
         plataformas.push_back(quadrado(programShader,posPlataformas[i].first,posPlataformas[i].second,anglePlataformas[i],widthPlataforma,heightPlataforma));
     }
 
-    
-    for(unsigned int i=0; i<posBarreiras.size();i++){
-        barreiras.push_back(quadrado(programShader,posBarreiras[i],0.5,0,0.1,1));
+    if(!DISCRETE){
+        for(unsigned int i=0; i<posBarreiras.size();i++){
+            barreiras.push_back(quadrado(programShader,posBarreiras[i],0.5,0,0.1,1));
+        }
     }
+
     
 }
 
@@ -55,7 +60,7 @@ void gameSimulation::inserirPlataforma(float posx,float posy,float angle){
 
 void gameSimulation::newScore(std::vector<float> &scores){
     this->scores = scores;
-
+    if(!DISCRETE) return; //se estivermos no modo continuo nao tem pq atualizar score
     posBarreiras.clear();
     //posBarreiras
     float posTmp = left;
@@ -186,12 +191,14 @@ float gameSimulation::simulate(float realTime){
                 if(!visitados[i] && position.y < 0){
 
                     visitados[i] = true;
-                    
-                    float pos = ((position.x - left) / 8 )* scores.size();
-                    if(pos >= 0 && pos < scores.size()){
-                        score += scores[(int)pos];
+                    if(!DISCRETE){
+                        score += funcValue(position.x);
+                    }else{
+                        float pos = ((position.x - left) / 8 )* scores.size();
+                        if(pos >= 0 && pos < scores.size()){
+                            score += scores[(int)pos];
+                        }
                     }
-                    //score += funcValue(position.x);
 
                 }
                 bolas[i].set_pos(position.x,position.y);
@@ -228,11 +235,15 @@ float gameSimulation::simulate(float realTime){
 
                 if(!visitados[i] && position.y < 0){
                     visitados[i] = true;
-                    float pos = ((position.x - left) / 8 )* scores.size();
-                    if(pos >= 0 && pos < scores.size()){
-                        score += scores[(int)pos];
+
+                    if(!DISCRETE){
+                        score += funcValue(position.x);
+                    }else{
+                        float pos = ((position.x - left) / 8 )* scores.size();
+                        if(pos >= 0 && pos < scores.size()){
+                            score += scores[(int)pos];
+                        }
                     }
-                    //score += funcValue(position.x);
                 }
                 bolas[i].set_pos(position.x,position.y);
 
