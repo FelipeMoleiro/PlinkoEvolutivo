@@ -7,6 +7,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h> 
 
+
 gameSimulation::gameSimulation(std::vector<std::pair<float,float>> &posBolas,std::vector<std::pair<float,float>> &posPlataformas,
                                 std::vector<float> &anglePlataformas,std::vector<float> &scores,Shader* program)
 {
@@ -16,6 +17,7 @@ gameSimulation::gameSimulation(std::vector<std::pair<float,float>> &posBolas,std
     this->scores = scores;
     this->programShader = program;
 
+    
     //posBarreiras
     float posTmp = left;
     posBarreiras.push_back(left);
@@ -33,13 +35,61 @@ gameSimulation::gameSimulation(std::vector<std::pair<float,float>> &posBolas,std
         plataformas.push_back(quadrado(programShader,posPlataformas[i].first,posPlataformas[i].second,anglePlataformas[i],widthPlataforma,heightPlataforma));
     }
 
+    
     for(unsigned int i=0; i<posBarreiras.size();i++){
         barreiras.push_back(quadrado(programShader,posBarreiras[i],0.5,0,0.1,1));
     }
-
+    
 }
 
-float gameSimulation::simulate(bool realTime){
+void gameSimulation::inserirBola(float posx,float posy){
+    posBolas.push_back(std::make_pair(posx,posy));
+    bolas.push_back(circle(programShader,posx,posy,0,raioBola));
+}
+
+void gameSimulation::inserirPlataforma(float posx,float posy,float angle){
+    posPlataformas.push_back(std::make_pair(posx,posy));
+    anglePlataformas.push_back(angle);
+    plataformas.push_back(quadrado(programShader,posx,posy,0,widthPlataforma,heightPlataforma));
+}
+
+void gameSimulation::newScore(std::vector<float> &scores){
+    this->scores = scores;
+
+    posBarreiras.clear();
+    //posBarreiras
+    float posTmp = left;
+    posBarreiras.push_back(left);
+    for(unsigned int i=0;i<scores.size();i++){
+        posTmp = left + (right-left)*(i+1.0)/scores.size();
+        posBarreiras.push_back(posTmp);
+    }
+
+    barreiras.clear();
+    for(unsigned int i=0; i<posBarreiras.size();i++){
+        barreiras.push_back(quadrado(programShader,posBarreiras[i],0.5,0,0.1,1));
+    }
+}
+
+float funcValue(float x){
+    return -(x*x) + 2;
+}
+
+void gameSimulation::drawFrame(){
+    for(unsigned int i = 0;i<bolas.size();i++){
+        bolas[i].draw();
+    }
+
+    for(unsigned int i = 0;i<plataformas.size();i++){
+        plataformas[i].draw();
+    }
+
+    for(unsigned int i = 0;i<barreiras.size();i++){
+        barreiras[i].draw();
+    }
+}
+
+float gameSimulation::simulate(float realTime){
 
 //INICIANDO MUNDO DA SIMULAÇÃO
     
@@ -84,6 +134,7 @@ float gameSimulation::simulate(bool realTime){
 
     }
 
+    
     std::vector<b2Body*> barreirasBox;
 
     for(unsigned int i = 0;i<posBarreiras.size();i++){
@@ -116,6 +167,7 @@ float gameSimulation::simulate(bool realTime){
 
         GLFWwindow* window = glfwGetCurrentContext();
         
+        //clock_t beginSimulation = clock();
         for(int step=0;step<10*60;step++){
             clock_t begin = clock();
             while (window != NULL && !glfwWindowShouldClose(window) && (double)(clock() - begin) / CLOCKS_PER_SEC < 1.0/60.0){
@@ -130,20 +182,20 @@ float gameSimulation::simulate(bool realTime){
             world.Step(timeStep, velocityIterations, positionIterations); //step smiluation
             for(unsigned int i = 0;i<bolasBox.size();i++){
                 b2Vec2 position = bolasBox[i]->GetPosition();
-                //float angle = bolasBox[i]->GetAngle();
-                //std::cout << position.y << std::endl;
-                if(!visitados[i] && position.y < 0.4){
+
+                if(!visitados[i] && position.y < 0){
+
                     visitados[i] = true;
+                    
                     float pos = ((position.x - left) / 8 )* scores.size();
-                    //std::cout << position.x  << " " << pos << " ";
                     if(pos >= 0 && pos < scores.size()){
                         score += scores[(int)pos];
-                        //std::cout << scores[(int)pos];
                     }
-                    //std::cout << std::endl;
+                    //score += funcValue(position.x);
+
                 }
                 bolas[i].set_pos(position.x,position.y);
-                //printf("%4.2f %4.2f %4.2f\n", position.x, position.y, angle);
+
             }
 
             int fim = 1;
@@ -152,18 +204,10 @@ float gameSimulation::simulate(bool realTime){
             }
             if(fim) break;
 
-            for(unsigned int i = 0;i<bolas.size();i++){
-                bolas[i].draw();
-            }
+            
 
-            for(unsigned int i = 0;i<plataformas.size();i++){
-                plataformas[i].draw();
-            }
-
-            for(unsigned int i = 0;i<barreiras.size();i++){
-                barreiras[i].draw();
-            }
             if(window != NULL && !glfwWindowShouldClose(window)){
+                drawFrame();
                 glfwSwapBuffers(window);
             }
 
@@ -181,20 +225,17 @@ float gameSimulation::simulate(bool realTime){
             world.Step(timeStep, velocityIterations, positionIterations); //step smiluation
             for(unsigned int i = 0;i<bolasBox.size();i++){
                 b2Vec2 position = bolasBox[i]->GetPosition();
-                //float angle = bolasBox[i]->GetAngle();
-                //std::cout << position.y << std::endl;
-                if(!visitados[i] && position.y < 0.4){
+
+                if(!visitados[i] && position.y < 0){
                     visitados[i] = true;
                     float pos = ((position.x - left) / 8 )* scores.size();
-                    //std::cout << position.x  << " " << pos << " ";
                     if(pos >= 0 && pos < scores.size()){
                         score += scores[(int)pos];
-                        //std::cout << scores[(int)pos];
                     }
-                    //std::cout << std::endl;
+                    //score += funcValue(position.x);
                 }
                 bolas[i].set_pos(position.x,position.y);
-                //printf("%4.2f %4.2f %4.2f\n", position.x, position.y, angle);
+
             }
             int fim = 1;
             for(unsigned int i = 0;i<bolasBox.size();i++){

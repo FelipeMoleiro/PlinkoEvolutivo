@@ -6,7 +6,7 @@
 #include <box2d/box2d.h>
 #include <stdio.h>
 #include "Shader.hpp"
-#include "object.hpp"
+#include "object.hpp" 
 #include <glm/glm.hpp>
 #include <glm/matrix.hpp>
 #include <glm/gtx/transform.hpp>
@@ -22,23 +22,29 @@
 #include "globals.hpp"
 #include "gameSimulation.hpp"
 
-const int numPlataformas = 4;
+int numPlataformas;
 
-float mutacaoMax = 10; //em graus
-float porcentagemMutacao = 0.1;
+float mutacaoMax = 5; //em graus
+float porcentagemMutacao = 1;
 
 #define NUM_INDIVIDUOS 10
 std::vector<float> anglePlataformas[NUM_INDIVIDUOS];
 float scoresIndividuos[NUM_INDIVIDUOS];
+
+float bestPastInd[5];
 
 int geracao = 0;
 
 void initpop(){
     //setting inicial values
     for(int i=0;i<NUM_INDIVIDUOS;i++){
-        for(unsigned int j=0;j<numPlataformas;j++){
-            anglePlataformas[i].push_back(rand()*360);
+        for(int j=0;j<numPlataformas;j++){
+            anglePlataformas[i].push_back(((double)rand())/RAND_MAX * 360);
         }
+    }
+
+    for(int i=0;i<5;i++){
+        bestPastInd[i] = 0;
     }
 }
 
@@ -88,8 +94,20 @@ void elitismo() {
     }
 }
 
+void alteraTaxaMutacao(){
+    if(bestPastInd[4]-bestPastInd[0]<0.00001)
+		mutacaoMax = mutacaoMax*1.2;
+	else
+		mutacaoMax = 5;
+
+    std::cout << "Mutação Max:" << mutacaoMax << std::endl;
+
+	if(mutacaoMax>10*360)
+		mutacaoMax = 5;
+}
+
 void show_melhor(gameSimulation* simu){
-    float maxScore = scoresIndividuos[1];
+    float maxScore = scoresIndividuos[0];
     int maxi = 0;
 
     for (int i=1;i<NUM_INDIVIDUOS;i++){ 
@@ -99,21 +117,142 @@ void show_melhor(gameSimulation* simu){
         }
     }
 
-    std::cout << "Geração " << geracao << ": " << maxScore << std::endl;;
-    simu->set_angles(anglePlataformas[maxi]);
-    simu->simulate(true);
+    // Guarda ultimos melhores individuos
+	for (int i=1;i<5;i++)
+	{
+		bestPastInd[i-1] = bestPastInd[i];
+	}
+	bestPastInd[4] = maxScore;
+
+    std::cout << "Geração " << geracao << ": " << maxScore << std::endl;
+
+    if(bestPastInd[4]-bestPastInd[3]>0.00001){
+        simu->set_angles(anglePlataformas[maxi]);
+        simu->simulate(true);
+    }
+
+}
+
+
+
+
+std::vector<std::pair<float,float>> posBolas;
+std::vector<std::pair<float,float>> posPlataformas;
+std::vector<float> anglePlataformasSet;
+std::vector<float> scores;
+
+void readTextIn(){
+    printf("Digite o numero de scores que teremos: \n");
+    int nScores;
+    scanf("%d", &nScores);
+    printf("Digite os scores separados por espaço ou \\n agora: \n");
+    for(int i=0;i<nScores;i++){
+        float score;
+        scanf("%f", &score);
+        scores.push_back(score);
+    }
+
+    printf("Digite o numero de bolas que teremos: \n");
+    int nBolas;
+    scanf("%d", &nBolas);
+    printf("Digite as posições x(-4 a 4) e y(0 a 16) de cada bola separados por espaço e cada bola separada por \\n agora:\n");
+    for(int i=0;i<nBolas;i++){
+        float posBolaX,posBolaY;
+        scanf("%f %f", &posBolaX,&posBolaY);
+        posBolas.push_back(std::make_pair(posBolaX,posBolaY));
+    }
+
+    printf("Digite o numero de plataformas que teremos: \n");
+    int nPlataformas;
+    scanf("%d", &nPlataformas);
+    printf("Digite as posições x(-4 a 4) e y(0 a 16) de cada plataforma separados por espaço e cada plataforma separada por \\n agora:\n");
+    for(int i=0;i<nPlataformas;i++){
+        float posPlataformaX,posPlataformaY;
+        scanf("%f %f", &posPlataformaX,&posPlataformaY);
+        posPlataformas.push_back(std::make_pair(posPlataformaX,posPlataformaY));
+        anglePlataformasSet.push_back(0);
+    }
+    numPlataformas = posPlataformas.size();
+
+    printf("\n\n\nIniciando Evolução:\n");
+}
+
+bool readingInput = true;
+gameSimulation* simuPtr;
+GLFWwindow* window;
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
+        readingInput = false;
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    xpos = xpos / width;
+    xpos = left + xpos * (right-left);
+
+    ypos = ypos / height;
+    ypos = top - ypos * (top-bottom);
+    //std::cout << xpos << " , " << ypos << std::endl;
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
+        posBolas.push_back(std::make_pair(xpos,ypos));
+        simuPtr->inserirBola(xpos,ypos);
+    }else if(button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS){
+        posPlataformas.push_back(std::make_pair(xpos,ypos));
+        anglePlataformasSet.push_back(0);
+        simuPtr->inserirPlataforma(xpos,ypos,0);
+    }
+        
+}
+
+
+void clickIn(){
+    printf("Digite o numero de scores que teremos: ");
+    int nScores;
+    scanf("%d", &nScores);
+    printf("Digite os scores separados por espaço ou \\n agora: ");
+    for(int i=0;i<nScores;i++){
+        float score;
+        scanf("%f", &score);
+        scores.push_back(score);
+    }
+    printf("Agora clique com o botão esquerdo onde ficarão as bolas, e com o botão direito onde ficarão as plataformas\n");
+    printf("E digite Enter com a janela OpenGL em foco para terminar de adicionar novos itens e iniciar a simulação\n\n");
+    
+    simuPtr->newScore(scores);
+
+    glfwShowWindow(window);
+
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetKeyCallback(window, key_callback);
+
+    while(!glfwWindowShouldClose(window) && readingInput){
+        glfwPollEvents();
+        glClearColor(1.0,1.0,1.0,1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        simuPtr->drawFrame();
+
+        glfwSwapBuffers(window);
+    }
+    numPlataformas = posPlataformas.size();
+    //
 }
 
 int main(){
-    srand(462);
+    srand(4241);
     glfwInit();
 
     glfwWindowHint(GLFW_VISIBLE, false);
 
-    GLFWwindow* window = glfwCreateWindow(width, height, "Cenario", NULL, NULL);
+    window = glfwCreateWindow(width, height, "Cenario", NULL, NULL);
 
     glfwMakeContextCurrent(window);
     
+
     GLint GlewInitResult = glewInit();
     printf("GlewStatus: %s\n", glewGetErrorString(GlewInitResult));
 
@@ -129,48 +268,31 @@ int main(){
     };
     programShader.setMat("projection",mat);
 
-    printf("oi\n");
 // Setando parametros da simulação
-    std::vector<std::pair<float,float>> posBolas;
-
-    posBolas.push_back(std::make_pair(-3,16));
-    posBolas.push_back(std::make_pair(-2,16));
-    posBolas.push_back(std::make_pair(1,16));
-    posBolas.push_back(std::make_pair(2,16));
-
-    std::vector<std::pair<float,float>> posPlataformas;
-    std::vector<float> anglePlataformasSet;
-
-    posPlataformas.push_back(std::make_pair(-3,15));
-    anglePlataformasSet.push_back(0);
-
-    posPlataformas.push_back(std::make_pair(-2,12));
-    anglePlataformasSet.push_back(0);
-
-    posPlataformas.push_back(std::make_pair(1,5));
-    anglePlataformasSet.push_back(0);
-
-    posPlataformas.push_back(std::make_pair(2,7));
-    anglePlataformasSet.push_back(0);
-
-    std::vector<float> scores;
-    scores.push_back(23);
-    scores.push_back(1);
-    scores.push_back(100);
-    scores.push_back(1);
-    scores.push_back(1);
-    scores.push_back(1);
+    
+    int inputType;
+    scanf("%d", &inputType);
+    if(inputType == 1){
+        readTextIn();
+    }
 
     gameSimulation simu(posBolas,posPlataformas,anglePlataformasSet,scores,&programShader);
+    simuPtr = &simu;
+
+    if(inputType == 2){
+        clickIn();
+    }
 
     glfwShowWindow(window);
 
     initpop();
     while(!glfwWindowShouldClose(window)){
         //printf("oi\n");
+        glfwPollEvents();
         avalia(&simu);
         show_melhor(&simu);
         elitismo();
+        alteraTaxaMutacao();
         geracao++;
     }
 
