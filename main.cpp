@@ -35,6 +35,8 @@ float bestPastInd[5];
 
 int geracao = 0;
 
+int popInit = 0;
+
 void initpop(){
     //setting inicial values
     for(int i=0;i<NUM_INDIVIDUOS;i++){
@@ -46,6 +48,7 @@ void initpop(){
     for(int i=0;i<5;i++){
         bestPastInd[i] = 0;
     }
+    popInit = 1;
 }
 
 void avalia(gameSimulation* simu){
@@ -61,6 +64,12 @@ std::vector<float> mistura_gene(std::vector<float> &gene1,std::vector<float> &ge
         geneFinal.push_back((gene1[i] + gene2[i])/2.0);
     }
     return geneFinal;
+}
+
+void randomize_gene(std::vector<float> &gene){
+    for(unsigned int i=0;i<gene.size();i++){
+        gene[i] = ((double)rand())/RAND_MAX * 360;
+    }
 }
 
 // Melhor compartilha gene com todos
@@ -94,6 +103,25 @@ void elitismo() {
     }
 }
 
+void genocidio(void)
+{
+    float maxScore = scoresIndividuos[0];
+    int maxi = 0;
+
+    for (int i=1;i<NUM_INDIVIDUOS;i++){ 
+        if (scoresIndividuos[i]>maxScore){
+            maxScore = scoresIndividuos[i];
+            maxi = i;
+        }
+    }
+
+	for(int i=0;i<NUM_INDIVIDUOS; i++){
+		if(i!= maxi){
+			randomize_gene(anglePlataformas[i]);
+		}
+	}
+}
+
 void alteraTaxaMutacao(){
     if(bestPastInd[4]-bestPastInd[0]<0.00001)
 		mutacaoMax = mutacaoMax*1.2;
@@ -102,9 +130,17 @@ void alteraTaxaMutacao(){
 
     std::cout << "Mutação Max:" << mutacaoMax << std::endl;
 
-	if(mutacaoMax>10*360)
+	if(mutacaoMax>10*360){
+        genocidio();
 		mutacaoMax = 5;
+    }
+
 }
+
+bool readingInput = true;
+gameSimulation* simuPtr;
+GLFWwindow* window;
+
 
 void show_melhor(gameSimulation* simu){
     float maxScore = scoresIndividuos[0];
@@ -126,9 +162,20 @@ void show_melhor(gameSimulation* simu){
 
     std::cout << "Geração " << geracao << ": " << maxScore << std::endl;
 
-    if(bestPastInd[4]-bestPastInd[3]>0.00001){
+    if(bestPastInd[4]-bestPastInd[3]>0.00001 || bestPastInd[4] < bestPastInd[3]){
         simu->set_angles(anglePlataformas[maxi]);
         simu->simulate(true);
+    }else{
+        simu->set_angles(anglePlataformas[maxi]);
+        glfwPollEvents();
+        glClearColor(1.0,1.0,1.0,1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        simuPtr->resetBolasGL();
+        simuPtr->drawFrame();
+
+        glfwSwapBuffers(window);
+
     }
 
 }
@@ -140,6 +187,10 @@ std::vector<std::pair<float,float>> posBolas;
 std::vector<std::pair<float,float>> posPlataformas;
 std::vector<float> anglePlataformasSet;
 std::vector<float> scores;
+
+
+
+
 
 void readTextIn(){
     printf("Digite o numero de scores que teremos: \n");
@@ -177,9 +228,6 @@ void readTextIn(){
     printf("\n\n\nIniciando Evolução:\n");
 }
 
-bool readingInput = true;
-gameSimulation* simuPtr;
-GLFWwindow* window;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -202,8 +250,15 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
         simuPtr->inserirBola(xpos,ypos);
     }else if(button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS){
         posPlataformas.push_back(std::make_pair(xpos,ypos));
-        anglePlataformasSet.push_back(0);
+        
         simuPtr->inserirPlataforma(xpos,ypos,0);
+        if(popInit){
+            for(int i=0;i<NUM_INDIVIDUOS;i++){
+                anglePlataformas[i].push_back(0);
+            }
+        }else{
+            anglePlataformasSet.push_back(0);
+        }
     }
         
 }

@@ -7,7 +7,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h> 
 
-#define DISCRETE 0
+#define DISCRETE 1
 
 gameSimulation::gameSimulation(std::vector<std::pair<float,float>> &posBolas,std::vector<std::pair<float,float>> &posPlataformas,
                                 std::vector<float> &anglePlataformas,std::vector<float> &scores,Shader* program)
@@ -91,6 +91,12 @@ void gameSimulation::drawFrame(){
 
     for(unsigned int i = 0;i<barreiras.size();i++){
         barreiras[i].draw();
+    }
+}
+
+void gameSimulation::resetBolasGL(){
+    for(unsigned int i = 0;i<posBolas.size();i++){
+        bolas[i].set_pos(posBolas[i].first,posBolas[i].second);
     }
 }
 

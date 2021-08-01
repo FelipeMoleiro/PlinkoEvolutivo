@@ -26,6 +26,7 @@ public:
     void newScore(std::vector<float> &scores);
     void inserirBola(float posx,float posy);
     void inserirPlataforma(float posx,float posy,float angle);
+    void resetBolasGL();
     //
     void set_angles(std::vector<float> &anglePlataformas);
     ~gameSimulation();
