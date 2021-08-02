@@ -25,7 +25,8 @@
 //algumas variaveis globais do programa
 int numPlataformas;
 
-float mutacaoMax = 5; //em graus
+#define MutMaxBase 1
+float mutacaoMax = MutMaxBase; //em graus
 float porcentagemMutacao = 0.1;
 
 #define NUM_INDIVIDUOS 10
@@ -53,11 +54,13 @@ void initpop(){
     popInit = 1;
 }
 
+float falseFloat = 0;
+
 //avalia todos os individuos
 void avalia(gameSimulation* simu){
     for(int i=0;i<NUM_INDIVIDUOS;i++){
         simu->set_angles(anglePlataformas[i]);
-        scoresIndividuos[i] = simu->simulate(false);
+        scoresIndividuos[i] = simu->simulate(&falseFloat);
     }
 }
 
@@ -133,13 +136,13 @@ void alteraTaxaMutacao(){
     if(bestPastInd[4]-bestPastInd[0]<0.00001)
 		mutacaoMax = mutacaoMax*1.2;
 	else
-		mutacaoMax = 5;
+		mutacaoMax = MutMaxBase;
 
     std::cout << "Mutação Max:" << mutacaoMax << std::endl;
 
-	if(mutacaoMax>10*360){
+	if(mutacaoMax>2*360){
         genocidio();
-		mutacaoMax = 5;
+		mutacaoMax = MutMaxBase;
     }
 
 }
@@ -148,6 +151,10 @@ void alteraTaxaMutacao(){
 bool readingInput = true;
 gameSimulation* simuPtr;
 GLFWwindow* window;
+
+float showScreen = SHOW_SCREEN;
+
+float lastShown = 0;
 
 //função que desenha na tela a simulação do melhor indivuo de cada geração
 void show_melhor(gameSimulation* simu){
@@ -171,11 +178,16 @@ void show_melhor(gameSimulation* simu){
 
     std::cout << "Geração " << geracao << ": " << maxScore << std::endl;
 
+    
+    //std::cout << "lastShownVar: " << lastShown << std::endl;
+    //std::cout << "showScreenVar: " << showScreen << std::endl;
     //se o score não é igual(aumentou ou abaixou) printa na tela
-    if(bestPastInd[4]-bestPastInd[3]>0.00001 || bestPastInd[4] < bestPastInd[3]){
+    if((!lastShown && showScreen) || bestPastInd[4]-bestPastInd[3]>0.00001 || bestPastInd[4] < bestPastInd[3]){
+        lastShown = showScreen;
         simu->set_angles(anglePlataformas[maxi]);
-        simu->simulate(SHOW_SCREEN);
+        simu->simulate(&showScreen);
     }else{
+        lastShown = showScreen;
         simu->set_angles(anglePlataformas[maxi]);
         glfwPollEvents();
         glClearColor(1.0,1.0,1.0,1.0);
@@ -187,6 +199,8 @@ void show_melhor(gameSimulation* simu){
         glfwSwapBuffers(window);
 
     }
+    
+    
 
 }
 
@@ -240,6 +254,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 {
     if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
         readingInput = false;
+    if (key == GLFW_KEY_P && action == GLFW_PRESS){
+        showScreen = !showScreen;
+        std::cout << "showScreen: " << showScreen << std::endl;
+    }
+        
 }
 
 //se clicar com o botão esquedo do mouse adiciona bola na simulação
@@ -318,6 +337,8 @@ int main(){
     window = glfwCreateWindow(width, height, "Cenario", NULL, NULL);
 
     glfwMakeContextCurrent(window);
+
+    glfwSetKeyCallback(window, key_callback);
     
     GLint GlewInitResult = glewInit();
     printf("GlewStatus: %s\n", glewGetErrorString(GlewInitResult));

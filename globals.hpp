@@ -13,7 +13,7 @@ const float widthPlataforma = 1;
 
 const float timeSimulation = 10;
 
-#define DISCRETE 0
+#define DISCRETE 1
 #define SHOW_SCREEN 1
 
 #endif

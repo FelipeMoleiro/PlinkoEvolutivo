@@ -23,7 +23,7 @@ private:
 public:
     gameSimulation(std::vector<std::pair<float,float>> &posBolas,std::vector<std::pair<float,float>> &posPlataformas,
                             std::vector<float> &anglePlataformas,std::vector<float> &scores,Shader* program);
-    float simulate(float realTime);
+    float simulate(float *realTime);
     void drawFrame();
     void newScore(std::vector<float> &scores);
     void inserirBola(float posx,float posy);

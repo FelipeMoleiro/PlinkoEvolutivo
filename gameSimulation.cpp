@@ -107,7 +107,7 @@ void gameSimulation::resetBolasGL(){
 }
 
 //simula o jogo mostrando na tela em tempo real ou nao(realTime != 0 é tempo real)
-float gameSimulation::simulate(float realTime){
+float gameSimulation::simulate(float *realTime){
 
 //INICIANDO MUNDO DA SIMULAÇÃO
     b2Vec2 gravity(0.0f, -10.0f);
@@ -182,17 +182,17 @@ float gameSimulation::simulate(float realTime){
 
     float score = 0;
 
-    if(realTime){
+    if(*realTime){
         // INICIALIZANDO AMBIENTE OPENGL
         GLFWwindow* window = glfwGetCurrentContext();
         
         //simula printando na tela
         for(int step=0;step<timeSimulation*60;step++){
             clock_t begin = clock();
-            while (window != NULL && !glfwWindowShouldClose(window) && (double)(clock() - begin) / CLOCKS_PER_SEC < 1.0/60.0){
+            while (*realTime && window != NULL && !glfwWindowShouldClose(window) && (double)(clock() - begin) / CLOCKS_PER_SEC < 1.0/60.0){
                 glfwPollEvents();
             }
-            if(window != NULL && !glfwWindowShouldClose(window)){
+            if(*realTime && window != NULL && !glfwWindowShouldClose(window)){
                 glClearColor(0,1.0,1.0,1.0);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             }
@@ -227,7 +227,7 @@ float gameSimulation::simulate(float realTime){
 
             
 
-            if(window != NULL && !glfwWindowShouldClose(window)){
+            if(*realTime && window != NULL && !glfwWindowShouldClose(window)){
                 drawFrame();
                 glfwSwapBuffers(window);
             }
