@@ -50,4 +50,4 @@ Basta seguir as instruções do programa, mas basicamente podemos ter input por 
 
 ## Apresentação
 
-VIDEO NO YOUTUBE
+https://youtu.be/7_-23916xaE
