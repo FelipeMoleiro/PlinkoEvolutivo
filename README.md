@@ -17,11 +17,17 @@ Podemos ver que as bolas caem do topo e interagem com as plataformas até cair e
 O loop principal é basicamente o seguinte:
 
 inicia os individuos com um valor aleatorio(angulos aleatorios para as plataformas)
+
 enquanto não termina a evolução:
+
   avalia o score de cada individuo
+  
   seleciona o melhor e mistura o gene dele com todos(elitismo)
+  
   mutaciona todos os individuos menos o melhor
+  
   se estamos a muito tempo sem melhoras aumenta o valor da mutação e se aumentarmos muito sem melhoras mantemos o melhor e reiniciamos todos os outros individuos com valores aleatorios(genocidio e mutação variada)
+  
   
 Com isso o programa vai encontrando angulos melhores em cada geração para fazer mais pontos. Em geral ele é bem rapido para encontrar otimos locais e a mutação variada e genocidio ajudam ele a destravar de otimos locais, porém para chegar no melhor de todos precisamos de um tempo um pouco maior e um pouco de sorte.
 
