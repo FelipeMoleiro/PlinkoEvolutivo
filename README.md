@@ -11,7 +11,7 @@ Neste projeto nós temos um jogo muito parecido com o Pinko, em que se tem bolas
 
 O que fazemos nesse projeto é modificar estes objetos que as bolas irão colidir para retangulos, e variando o angulo deles, então temos um problema de otimização, queremos otimizar o angulo de inclinação dessas plataformas para que o score obtido no jogo seja o maximo. Para simplificar a ideia aqui temos uma imagem do problema programado:
 
-COLOCAR IMAGEM
+![PlinkoGif](https://github.com/FelipeMoleiro/PlinkoEvolutivo/blob/main/plinko.gif?raw=true)
 
 Podemos ver que as bolas caem do topo e interagem com as plataformas até cair em um dos cestos, e cada cesto tem um valor de score. O programa é um algoritmo evolutivo que gera diversos individos(valores de angulos para plataforma), e tenta evoluir eles para achar os melhor valores.
 
