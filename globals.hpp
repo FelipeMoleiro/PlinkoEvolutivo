@@ -11,4 +11,9 @@ const float raioBola = 0.3;
 const float heightPlataforma = 0.2;
 const float widthPlataforma = 1;
 
+const float timeSimulation = 10;
+
+#define DISCRETE 0
+#define SHOW_SCREEN 1
+
 #endif

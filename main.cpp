@@ -25,7 +25,7 @@
 int numPlataformas;
 
 float mutacaoMax = 5; //em graus
-float porcentagemMutacao = 1;
+float porcentagemMutacao = 0.1;
 
 #define NUM_INDIVIDUOS 10
 std::vector<float> anglePlataformas[NUM_INDIVIDUOS];
@@ -164,7 +164,7 @@ void show_melhor(gameSimulation* simu){
 
     if(bestPastInd[4]-bestPastInd[3]>0.00001 || bestPastInd[4] < bestPastInd[3]){
         simu->set_angles(anglePlataformas[maxi]);
-        simu->simulate(true);
+        simu->simulate(SHOW_SCREEN);
     }else{
         simu->set_angles(anglePlataformas[maxi]);
         glfwPollEvents();

@@ -7,7 +7,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h> 
 
-#define DISCRETE 1
+
 
 gameSimulation::gameSimulation(std::vector<std::pair<float,float>> &posBolas,std::vector<std::pair<float,float>> &posPlataformas,
                                 std::vector<float> &anglePlataformas,std::vector<float> &scores,Shader* program)
@@ -19,7 +19,7 @@ gameSimulation::gameSimulation(std::vector<std::pair<float,float>> &posBolas,std
     this->programShader = program;
 
     
-    if(!DISCRETE){
+    if(DISCRETE){
         //posBarreiras
         float posTmp = left;
         posBarreiras.push_back(left);
@@ -38,7 +38,7 @@ gameSimulation::gameSimulation(std::vector<std::pair<float,float>> &posBolas,std
         plataformas.push_back(quadrado(programShader,posPlataformas[i].first,posPlataformas[i].second,anglePlataformas[i],widthPlataforma,heightPlataforma));
     }
 
-    if(!DISCRETE){
+    if(DISCRETE){
         for(unsigned int i=0; i<posBarreiras.size();i++){
             barreiras.push_back(quadrado(programShader,posBarreiras[i],0.5,0,0.1,1));
         }
@@ -179,7 +179,7 @@ float gameSimulation::simulate(float realTime){
         GLFWwindow* window = glfwGetCurrentContext();
         
         //clock_t beginSimulation = clock();
-        for(int step=0;step<10*60;step++){
+        for(int step=0;step<timeSimulation*60;step++){
             clock_t begin = clock();
             while (window != NULL && !glfwWindowShouldClose(window) && (double)(clock() - begin) / CLOCKS_PER_SEC < 1.0/60.0){
                 glfwPollEvents();
@@ -233,7 +233,7 @@ float gameSimulation::simulate(float realTime){
         }
 
     }else{
-        for(int step=0;step<10*60;step++){
+        for(int step=0;step<timeSimulation*60;step++){
         
             world.Step(timeStep, velocityIterations, positionIterations); //step smiluation
             for(unsigned int i = 0;i<bolasBox.size();i++){
