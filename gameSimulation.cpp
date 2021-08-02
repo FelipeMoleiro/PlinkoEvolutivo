@@ -8,7 +8,7 @@
 #include <GLFW/glfw3.h> 
 
 
-
+//Recebe posições iniciais das bolas e plataformas, mais os seus angulos, e os scores e cria a simulação do jogo
 gameSimulation::gameSimulation(std::vector<std::pair<float,float>> &posBolas,std::vector<std::pair<float,float>> &posPlataformas,
                                 std::vector<float> &anglePlataformas,std::vector<float> &scores,Shader* program)
 {
@@ -47,17 +47,20 @@ gameSimulation::gameSimulation(std::vector<std::pair<float,float>> &posBolas,std
     
 }
 
+//inserir mais bolas depois de criada a simulação
 void gameSimulation::inserirBola(float posx,float posy){
     posBolas.push_back(std::make_pair(posx,posy));
     bolas.push_back(circle(programShader,posx,posy,0,raioBola));
 }
 
+//inserir mais plataformas depois de criada a simulação
 void gameSimulation::inserirPlataforma(float posx,float posy,float angle){
     posPlataformas.push_back(std::make_pair(posx,posy));
     anglePlataformas.push_back(angle);
     plataformas.push_back(quadrado(programShader,posx,posy,0,widthPlataforma,heightPlataforma));
 }
 
+//mudar o vetor de scores e recalcula barreiras(cestas de score)
 void gameSimulation::newScore(std::vector<float> &scores){
     this->scores = scores;
     if(!DISCRETE) return; //se estivermos no modo continuo nao tem pq atualizar score
@@ -76,10 +79,12 @@ void gameSimulation::newScore(std::vector<float> &scores){
     }
 }
 
+//função usada para a versão continua do jogo, que nao utiliza cestas de scores e sim uma func continua
 float funcValue(float x){
     return -(x*x) + 2;
 }
 
+//desenha um frame da simulação
 void gameSimulation::drawFrame(){
     for(unsigned int i = 0;i<bolas.size();i++){
         bolas[i].draw();
@@ -94,19 +99,21 @@ void gameSimulation::drawFrame(){
     }
 }
 
+//reseta a posição dos objetos bolas opengl
 void gameSimulation::resetBolasGL(){
     for(unsigned int i = 0;i<posBolas.size();i++){
         bolas[i].set_pos(posBolas[i].first,posBolas[i].second);
     }
 }
 
+//simula o jogo mostrando na tela em tempo real ou nao(realTime != 0 é tempo real)
 float gameSimulation::simulate(float realTime){
 
 //INICIANDO MUNDO DA SIMULAÇÃO
-    
     b2Vec2 gravity(0.0f, -10.0f);
     b2World world(gravity);
 
+    //criando as plataformas na simulação
     std::vector<b2Body*> plataformasBox;
 
     for(unsigned int i = 0;i<posPlataformas.size();i++){
@@ -123,6 +130,7 @@ float gameSimulation::simulate(float realTime){
 
     }
 
+    //criando as bolas na simulação
     std::vector<b2Body*> bolasBox;
 
     for(unsigned int i = 0;i<posBolas.size();i++){
@@ -145,7 +153,7 @@ float gameSimulation::simulate(float realTime){
 
     }
 
-    
+    //criando as barreiras das cestas na simulação
     std::vector<b2Body*> barreirasBox;
 
     for(unsigned int i = 0;i<posBarreiras.size();i++){
@@ -161,11 +169,13 @@ float gameSimulation::simulate(float realTime){
 
     }
 
+    //inicia visitados com false
     bool visitados[bolas.size()];
     for(unsigned int i=0;i<bolas.size();i++){
         visitados[i] = false;
     }
 
+    //parametros da simulação(60 frames por segundo, e numero de iterações de resolução da simulação fisica)
     float timeStep = 1.0f / 60.0f;
     int32 velocityIterations = 6;
     int32 positionIterations = 2;
@@ -174,11 +184,9 @@ float gameSimulation::simulate(float realTime){
 
     if(realTime){
         // INICIALIZANDO AMBIENTE OPENGL
-        
-
         GLFWwindow* window = glfwGetCurrentContext();
         
-        //clock_t beginSimulation = clock();
+        //simula printando na tela
         for(int step=0;step<timeSimulation*60;step++){
             clock_t begin = clock();
             while (window != NULL && !glfwWindowShouldClose(window) && (double)(clock() - begin) / CLOCKS_PER_SEC < 1.0/60.0){
@@ -197,7 +205,7 @@ float gameSimulation::simulate(float realTime){
                 if(!visitados[i] && position.y < 0){
 
                     visitados[i] = true;
-                    if(!DISCRETE){
+                    if(!DISCRETE){ //se versao continua usa funcValue, se não usa vetor de scores
                         score += funcValue(position.x);
                     }else{
                         float pos = ((position.x - left) / 8 )* scores.size();
@@ -212,7 +220,7 @@ float gameSimulation::simulate(float realTime){
             }
 
             int fim = 1;
-            for(unsigned int i = 0;i<bolasBox.size();i++){
+            for(unsigned int i = 0;i<bolasBox.size();i++){ //verifica se todas as bolas ja cairam em cestas
                 if(!visitados[i]) fim=0;
             }
             if(fim) break;
@@ -242,7 +250,7 @@ float gameSimulation::simulate(float realTime){
                 if(!visitados[i] && position.y < 0){
                     visitados[i] = true;
 
-                    if(!DISCRETE){
+                    if(!DISCRETE){ //se versao continua usa funcValue, se não usa vetor de scores
                         score += funcValue(position.x);
                     }else{
                         float pos = ((position.x - left) / 8 )* scores.size();
@@ -255,15 +263,12 @@ float gameSimulation::simulate(float realTime){
 
             }
             int fim = 1;
-            for(unsigned int i = 0;i<bolasBox.size();i++){
+            for(unsigned int i = 0;i<bolasBox.size();i++){ //verifica se todas as bolas ja cairam em cestas
                 if(!visitados[i]) fim=0;
             }
             if(fim) break;
         }
     }
-
-    
-
 
     return score;
     
@@ -273,6 +278,7 @@ gameSimulation::~gameSimulation()
 {
 }
 
+//seta os angulos da simulação
 void gameSimulation::set_angles(std::vector<float> &anglePlataformas){
     this->anglePlataformas = anglePlataformas;
     for(unsigned int i = 0;i<plataformas.size();i++){

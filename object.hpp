@@ -1,9 +1,9 @@
 #ifndef OBJECT_HPP
 #define OBJECT_HPP
 
+//IMPLEMENTAÇÃO SIMPLES DE FORMAS GEOMETRICAS EM OPENGL
 
 #include "Shader.hpp"
-
 #include <GL/glew.h>
 #include <GL/gl.h>  /* verifique no seu SO onde fica o gl.h */
 #define GLFW_INCLUDE_NONE

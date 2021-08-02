@@ -71,11 +71,14 @@ quadrado::~quadrado()
 {
 }
 
+//desenha na tela o quadrado
 void quadrado::draw(){
     this->program->useShader();
     this->program->setVec4("color",glm::vec3(1,0,0));
     float c = cos(this->angle*M_PI/180);
     float s = sin(this->angle*M_PI/180);
+
+    //rotation matrix of square
     float mat[16] = {
         c,-s,0,x,
         s,c,0,y,
@@ -83,9 +86,7 @@ void quadrado::draw(){
         0,0,0,1
     };
     this->program->setMat("model",mat);
-    //printf("%d\n",  this->program->getID());
-    //printf("%f %f\n", x, y);
-    //printf("%f %f\n",  width, height);
+
     glBindVertexArray(this->VAO);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
@@ -134,11 +135,13 @@ circle::~circle()
 {
 }
 
+//desenha na tela o circulo
 void circle::draw(){
     this->program->useShader();
     this->program->setVec4("color",glm::vec3(1,0,0));
     float c = cos(this->angle*M_PI/180);
     float s = sin(this->angle*M_PI/180);
+    //rotation matrix of circle
     float mat[16] = {
         c,-s,0,x,
         s,c,0,y,
@@ -146,9 +149,6 @@ void circle::draw(){
         0,0,0,1
     };
     this->program->setMat("model",mat);
-    //printf("%d\n",  this->program->getID());
-    //printf("%f %f\n", x, y);
-    //printf("%f %f\n",  width, height);
     glBindVertexArray(this->VAO);
     glDrawArrays(GL_TRIANGLE_FAN, 0,30);
 }

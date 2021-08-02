@@ -4,6 +4,8 @@
 #include "Shader.hpp"
 #include <utility>
 
+//Objeto que cria uma simulação do jogo
+
 class gameSimulation
 {
 private:
@@ -27,7 +29,6 @@ public:
     void inserirBola(float posx,float posy);
     void inserirPlataforma(float posx,float posy,float angle);
     void resetBolasGL();
-    //
     void set_angles(std::vector<float> &anglePlataformas);
     ~gameSimulation();
 };

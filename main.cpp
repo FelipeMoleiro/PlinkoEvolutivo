@@ -22,6 +22,7 @@
 #include "globals.hpp"
 #include "gameSimulation.hpp"
 
+//algumas variaveis globais do programa
 int numPlataformas;
 
 float mutacaoMax = 5; //em graus
@@ -35,8 +36,9 @@ float bestPastInd[5];
 
 int geracao = 0;
 
-int popInit = 0;
+int popInit = 0; //se a população ja foi iniciada ou nao
 
+//func que inicia os valores da população
 void initpop(){
     //setting inicial values
     for(int i=0;i<NUM_INDIVIDUOS;i++){
@@ -51,6 +53,7 @@ void initpop(){
     popInit = 1;
 }
 
+//avalia todos os individuos
 void avalia(gameSimulation* simu){
     for(int i=0;i<NUM_INDIVIDUOS;i++){
         simu->set_angles(anglePlataformas[i]);
@@ -58,6 +61,7 @@ void avalia(gameSimulation* simu){
     }
 }
 
+//mistura dois genes pegando a media
 std::vector<float> mistura_gene(std::vector<float> &gene1,std::vector<float> &gene2){
     std::vector<float> geneFinal;
     for(unsigned int i=0;i<gene1.size();i++){
@@ -66,6 +70,7 @@ std::vector<float> mistura_gene(std::vector<float> &gene1,std::vector<float> &ge
     return geneFinal;
 }
 
+//randomiza um gene
 void randomize_gene(std::vector<float> &gene){
     for(unsigned int i=0;i<gene.size();i++){
         gene[i] = ((double)rand())/RAND_MAX * 360;
@@ -74,6 +79,7 @@ void randomize_gene(std::vector<float> &gene){
 
 // Melhor compartilha gene com todos
 void elitismo() {
+    //acha melhor
     float maxScore = scoresIndividuos[0];
     int maxi = 0;
 
@@ -84,8 +90,7 @@ void elitismo() {
         }
     }
 
-    //std::cout<< maxScore << std::endl;
-
+    //compartilha gene e muta eles
     for (int i=0;i<NUM_INDIVIDUOS;i++){
         if (i==maxi)        // Protege o melhor individuo
             continue;
@@ -103,6 +108,7 @@ void elitismo() {
     }
 }
 
+//mata todos os individuos que não são o melhor
 void genocidio(void)
 {
     float maxScore = scoresIndividuos[0];
@@ -122,6 +128,7 @@ void genocidio(void)
 	}
 }
 
+//se não estamos tendo resultado com um valor de mutação por muito tempo, nos aumentamos a mutação
 void alteraTaxaMutacao(){
     if(bestPastInd[4]-bestPastInd[0]<0.00001)
 		mutacaoMax = mutacaoMax*1.2;
@@ -137,12 +144,14 @@ void alteraTaxaMutacao(){
 
 }
 
+//variaveis para controlar a leitura de input e janela
 bool readingInput = true;
 gameSimulation* simuPtr;
 GLFWwindow* window;
 
-
+//função que desenha na tela a simulação do melhor indivuo de cada geração
 void show_melhor(gameSimulation* simu){
+    //acha melhor individuo
     float maxScore = scoresIndividuos[0];
     int maxi = 0;
 
@@ -162,6 +171,7 @@ void show_melhor(gameSimulation* simu){
 
     std::cout << "Geração " << geracao << ": " << maxScore << std::endl;
 
+    //se o score não é igual(aumentou ou abaixou) printa na tela
     if(bestPastInd[4]-bestPastInd[3]>0.00001 || bestPastInd[4] < bestPastInd[3]){
         simu->set_angles(anglePlataformas[maxi]);
         simu->simulate(SHOW_SCREEN);
@@ -180,18 +190,13 @@ void show_melhor(gameSimulation* simu){
 
 }
 
-
-
-
+//variaveis das posições iniciais da simulação
 std::vector<std::pair<float,float>> posBolas;
 std::vector<std::pair<float,float>> posPlataformas;
 std::vector<float> anglePlataformasSet;
 std::vector<float> scores;
 
-
-
-
-
+//faz a leitura das posições iniciais da posição em forma de texto
 void readTextIn(){
     printf("Digite o numero de scores que teremos: \n");
     int nScores;
@@ -228,13 +233,17 @@ void readTextIn(){
     printf("\n\n\nIniciando Evolução:\n");
 }
 
+//funções de callback para inputs na tela glfw no ambiente opengl
 
+//se aperta enter inicia simulação
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
         readingInput = false;
 }
 
+//se clicar com o botão esquedo do mouse adiciona bola na simulação
+//se clicar com o botão direito do mouse adiciona plataforma na simulação
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
     double xpos, ypos;
@@ -263,7 +272,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
         
 }
 
-
+//faz a leitura do input com o usuario clicando onde colocar as bolas e plataformas na tela
 void clickIn(){
     printf("Digite o numero de scores que teremos: ");
     int nScores;
@@ -294,11 +303,14 @@ void clickIn(){
         glfwSwapBuffers(window);
     }
     numPlataformas = posPlataformas.size();
-    //
+
 }
+
 
 int main(){
     srand(4241);
+
+    //inicia ambiente de janelas
     glfwInit();
 
     glfwWindowHint(GLFW_VISIBLE, false);
@@ -307,14 +319,13 @@ int main(){
 
     glfwMakeContextCurrent(window);
     
-
     GLint GlewInitResult = glewInit();
     printf("GlewStatus: %s\n", glewGetErrorString(GlewInitResult));
 
-
+    //inicia shader openGL
     Shader programShader = Shader("shaders/vertexShader.glsl","shaders/fragmentShader.glsl");
 
-    
+    //matriz de projeção para arrumar tela baseado nos parametros de tamanho
     float mat[16] = {
         2/(right-left),0,0,-(right+left)/(right-left),
         0,2/(top-bottom),0,-(top+bottom)/(top-bottom),
@@ -323,8 +334,10 @@ int main(){
     };
     programShader.setMat("projection",mat);
 
-// Setando parametros da simulação
-    
+
+    //chamando funções de leitura baseado no input
+
+    printf("Digite 1 para entrada com texto ou 2 para entrada com mouse e teclado: \n");
     int inputType;
     scanf("%d", &inputType);
     if(inputType == 1){
@@ -340,48 +353,16 @@ int main(){
 
     glfwShowWindow(window);
 
-    initpop();
+    //loop principal
+    initpop(); //inicia população
     while(!glfwWindowShouldClose(window)){
-        //printf("oi\n");
-        glfwPollEvents();
-        avalia(&simu);
-        show_melhor(&simu);
-        elitismo();
-        alteraTaxaMutacao();
+        glfwPollEvents(); //verifica eventos de mouse e teclado
+        avalia(&simu); //avalia individuos
+        show_melhor(&simu); //mostra na tela o melhor
+        elitismo(); //pega o melhor e mistura gene com todos alem de mutar eles
+        alteraTaxaMutacao(); //muda a taxa de mutação se necessaio
         geracao++;
     }
-
-
-    
-    
-
-    
-    /*
-    // Exibindo nossa janela
-    glfwShowWindow(window);
-
-
-    while (!glfwWindowShouldClose(window))
-    {   
-        //clock_t begin = clock();
-
-        //while((double)(clock() - begin) / CLOCKS_PER_SEC < 1.0/60.0){
-        //    glfwPollEvents();
-       // }
-        
-        glClearColor(1.0,1.0,1.0,1.0);
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-
-
-
-
-
-        glfwSwapBuffers(window);
-    }
-*/
 
     return 0;
 }
