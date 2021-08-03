@@ -42,11 +42,15 @@ Este Grafico diz respeito a simulação exemplo em simulations/ex1.in, que é a 
 
 Instalar GLFW https://www.glfw.org/
 
+Instalar Glew http://glew.sourceforge.net/
+
 Instalar Box2D https://box2d.org/
+
+Instalar Glm https://github.com/g-truc/glm
 
 Em debian/ubuntu:
 
-	sudo apt install libglfw3 libbox2d-dev
+	sudo apt install libglfw3-dev libbox2d-dev libglew-dev libglm-dev
 
 ## Compilar
 
