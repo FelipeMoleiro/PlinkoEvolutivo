@@ -52,6 +52,8 @@ Em debian/ubuntu:
 
 	sudo apt install libglfw3-dev libbox2d-dev libglew-dev libglm-dev
 
+Instalando pela linha de comando voce não deve ter problemas, entretanto se tiver algum problema com a livraria box2d, verifique se no seu computador na pasta /usr/include como está capitalizado a livraria box2d, por padrão ao instalar a livraria pelo apt install ela vem como Box2D, entretanto, se compilar do codigo fonte do site ela vem como box2d. Caso voce esteja com a livraria em minusculo basta editar o arquivo gamesimulation.cpp no #include de <Box2D/Box2D.h> para <box2d/box2d.h> e no makefile de -lBox2D para -lbox2d.
+
 ## Compilar
 
 	make all
