@@ -156,18 +156,22 @@ float showScreen = SHOW_SCREEN;
 
 float lastShown = 0;
 
+FILE* outGrafico;
+
 //função que desenha na tela a simulação do melhor indivuo de cada geração
 void show_melhor(gameSimulation* simu){
     //acha melhor individuo
     float maxScore = scoresIndividuos[0];
     int maxi = 0;
-
+    float meanScore = 0;
     for (int i=1;i<NUM_INDIVIDUOS;i++){ 
+        meanScore += scoresIndividuos[i];
         if (scoresIndividuos[i]>maxScore){
             maxScore = scoresIndividuos[i];
             maxi = i;
         }
     }
+    meanScore /= (float)NUM_INDIVIDUOS;
 
     // Guarda ultimos melhores individuos
 	for (int i=1;i<5;i++)
@@ -177,7 +181,7 @@ void show_melhor(gameSimulation* simu){
 	bestPastInd[4] = maxScore;
 
     std::cout << "Geração " << geracao << ": " << maxScore << std::endl;
-
+    fprintf(outGrafico,"%d,%f,%f\n",geracao,maxScore,meanScore);
     
     //std::cout << "lastShownVar: " << lastShown << std::endl;
     //std::cout << "showScreenVar: " << showScreen << std::endl;
@@ -326,6 +330,7 @@ void clickIn(){
 }
 
 
+
 int main(){
     srand(4241);
 
@@ -372,6 +377,8 @@ int main(){
         clickIn();
     }
 
+    outGrafico = fopen("evolucao.csv","w");
+    fprintf(outGrafico,"Geração,Score Melhor Individuo,Score Medio Individuos\n");
     glfwShowWindow(window);
 
     //loop principal
@@ -384,6 +391,8 @@ int main(){
         alteraTaxaMutacao(); //muda a taxa de mutação se necessaio
         geracao++;
     }
+
+    fclose(outGrafico);
 
     return 0;
 }
