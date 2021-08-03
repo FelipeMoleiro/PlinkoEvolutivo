@@ -7,6 +7,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h> 
 
+#include <Box2D/Box2D.h>
 
 //Recebe posições iniciais das bolas e plataformas, mais os seus angulos, e os scores e cria a simulação do jogo
 gameSimulation::gameSimulation(std::vector<std::pair<float,float>> &posBolas,std::vector<std::pair<float,float>> &posPlataformas,

@@ -1,5 +1,4 @@
 #include <vector>
-#include <box2d/box2d.h>
 #include "object.hpp"
 #include "Shader.hpp"
 #include <utility>

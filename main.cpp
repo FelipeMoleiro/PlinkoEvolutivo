@@ -3,7 +3,6 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h> 
 
-#include <box2d/box2d.h>
 #include <stdio.h>
 #include "Shader.hpp"
 #include "object.hpp" 
