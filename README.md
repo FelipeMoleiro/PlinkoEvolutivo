@@ -34,7 +34,9 @@ Com isso o programa vai encontrando angulos melhores a cada geração para fazer
 
 ## Grafico Da Evolição Do Sistema
 
-![PlinkoGif](https://github.com/FelipeMoleiro/PlinkoEvolutivo/blob/main/Scores%20Individuos.png?raw=true)
+![EvoluçãoGrafico](https://github.com/FelipeMoleiro/PlinkoEvolutivo/blob/main/Scores%20Individuos.png?raw=true)
+
+Este Grafico diz respeito a simulação exemplo em simulations/ex1.in, que é a mesma do gif animado. Neste caso o score de 400 atingido é o score maximo global, ou seja, todas as bolinhas estão caindo no cesto de maior score.
 
 ## Dependencias
 
