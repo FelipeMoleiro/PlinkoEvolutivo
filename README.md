@@ -32,11 +32,19 @@ O loop principal é basicamente o seguinte:
   
 Com isso o programa vai encontrando angulos melhores a cada geração para fazer mais pontos. Em geral ele é bem rapido para encontrar otimos locais e a mutação variada e genocidio ajudam ele a destravar destes otimos locais, porém para chegar no melhor de todos precisamos de um tempo um pouco maior e um pouco de sorte.
 
+## Grafico Da Evolição Do Sistema
+
+![PlinkoGif](https://github.com/FelipeMoleiro/PlinkoEvolutivo/blob/main/Scores%20Individuos.png?raw=true)
+
 ## Dependencias
 
 Instalar GLFW https://www.glfw.org/
 
 Instalar Box2D https://box2d.org/
+
+Em debian/ubuntu:
+
+	sudo apt install libglfw3 libbox2d-dev
 
 ## Compilar
 
