@@ -162,7 +162,7 @@ void show_melhor(gameSimulation* simu){
     //acha melhor individuo
     float maxScore = scoresIndividuos[0];
     int maxi = 0;
-    float meanScore = 0;
+    float meanScore = scoresIndividuos[0];
     for (int i=1;i<NUM_INDIVIDUOS;i++){ 
         meanScore += scoresIndividuos[i];
         if (scoresIndividuos[i]>maxScore){
